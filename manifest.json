@@ -1,16 +1,17 @@
 {
   "name": "Meteo",
   "short_name": "Meteo",
-  "description": "Meteo semplice con GPS e ricerca città",
-  "start_url": "./meteo_pwa.html",
+  "description": "Meteo con icone 3D, previsioni orarie, GPS e ricerca città",
+  "id": "./meteo_pwa_icone_nuove.html",
+  "start_url": "./meteo_pwa_icone_nuove.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1e3c72",
-  "theme_color": "#1e3c72",
+  "background_color": "#1e88e5",
+  "theme_color": "#1e88e5",
   "lang": "it",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icon-3d-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-3d-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
