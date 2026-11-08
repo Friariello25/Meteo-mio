@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e3c72">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Meteo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    min-height: 100vh;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, #1e3c72, #2a5298 50%, #6dd5fa);
+    background-attachment: fixed;
+    color: #fff;
+    padding: max(18px, env(safe-area-inset-top)) 16px 28px;
+    transition: background .6s;
+  }
+  body.notte { background: linear-gradient(160deg, #0f2027, #203a43 50%, #2c5364); background-attachment: fixed; }
+  .wrap { max-width: 420px; margin: 0 auto; }
+
+  .cerca { display: flex; gap: 8px; margin-bottom: 16px; }
+  .cerca input {
+    flex: 1; padding: 13px 16px; border: none; border-radius: 14px; font-size: 1rem;
+    background: rgba(255,255,255,.18); color: #fff; outline: none;
+  }
+  .cerca input::placeholder { color: rgba(255,255,255,.65); }
+  .cerca button {
+    width: 48px; border: none; border-radius: 14px; font-size: 1.2rem; cursor: pointer;
+    background: rgba(255,255,255,.9); color: #1e3c72;
+  }
+  .suggerimenti { margin: -8px 0 14px; display: none; }
+  .suggerimenti div {
+    padding: 11px 14px; background: rgba(255,255,255,.2); border-radius: 12px; margin-bottom: 6px; cursor: pointer; font-size: .95rem;
+  }
+
+  .card {
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 28px; padding: 26px 22px; text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,.28);
+    margin-bottom: 14px;
+  }
+  .citta { font-size: 1.35rem; font-weight: 600; }
+  .ora { font-size: .78rem; opacity: .75; margin-top: 4px; }
+  .icona { font-size: 5.5rem; margin-top: 10px; filter: drop-shadow(0 6px 12px rgba(0,0,0,.25)); animation: fluttua 4s ease-in-out infinite; }
+  @keyframes fluttua { 50% { transform: translateY(-8px); } }
+  .temp { font-size: 4.6rem; font-weight: 200; line-height: 1; }
+  .desc { font-size: 1.1rem; opacity: .92; margin: 6px 0 18px; }
+  .dettagli { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .box { background: rgba(255,255,255,.16); border-radius: 16px; padding: 12px 6px; }
+  .box span { display: block; font-size: .7rem; opacity: .75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .6px; }
+  .box b { font-size: 1.15rem; font-weight: 600; }
+
+  .titolo { font-size: .75rem; text-transform: uppercase; letter-spacing: .8px; opacity: .75; text-align: left; margin-bottom: 10px; }
+  .ore { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .ora-box { flex: 0 0 auto; min-width: 58px; background: rgba(255,255,255,.14); border-radius: 16px; padding: 10px 6px; font-size: .85rem; }
+  .ora-box .ic { font-size: 1.5rem; margin: 4px 0; }
+  .giorni { display: flex; gap: 8px; }
+  .giorno { flex: 1; background: rgba(255,255,255,.14); border-radius: 16px; padding: 10px 4px; font-size: .82rem; }
+  .giorno .ic { font-size: 1.6rem; margin: 4px 0; }
+  small { opacity: .72; }
+
+  .stato { text-align: center; font-size: .8rem; opacity: .8; margin: 8px 0; min-height: 1.2em; }
+  .azioni { display: flex; gap: 10px; }
+  .azioni button {
+    flex: 1; padding: 13px; border: none; border-radius: 14px; font-size: .95rem; font-weight: 600; cursor: pointer;
+    background: rgba(255,255,255,.9); color: #1e3c72;
+  }
+  .nota { font-size: .68rem; opacity: .55; text-align: center; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cerca">
+    <input id="cerca" type="search" placeholder="Cerca una città..." autocomplete="off">
+    <button onclick="cercaCitta()" aria-label="Cerca">🔍</button>
+  </div>
+  <div class="suggerimenti" id="sugg"></div>
+
+  <div class="card">
+    <div class="citta" id="citta">📍 ...</div>
+    <div class="ora" id="ora">Caricamento...</div>
+    <div class="icona" id="icona">⏳</div>
+    <div class="temp" id="temp">--°</div>
+    <div class="desc" id="desc">Sto chiamando l'API...</div>
+    <div class="dettagli">
+      <div class="box"><span>Vento</span><b id="vento">--</b></div>
+      <div class="box"><span>Direzione</span><b id="dir">--</b></div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:18px 16px">
+    <div class="titolo">Prossime ore</div>
+    <div class="ore" id="ore"></div>
+  </div>
+
+  <div class="card" style="padding:18px 16px">
+    <div class="titolo">Prossimi giorni</div>
+    <div class="giorni" id="giorni"></div>
+  </div>
+
+  <div class="stato" id="stato"></div>
+  <div class="azioni">
+    <button onclick="usaGPS()">📍 La mia posizione</button>
+    <button onclick="carica()">🔄 Aggiorna</button>
+  </div>
+  <div class="nota">Dati da Open-Meteo.com · API gratuita, senza chiave</div>
+</div>
+
+<script>
+const CODICI = {
+  0: ["☀️", "Sereno"], 1: ["🌤️", "Quasi sereno"], 2: ["⛅", "Parzialmente nuvoloso"], 3: ["☁️", "Coperto"],
+  45: ["🌫️", "Nebbia"], 48: ["🌫️", "Nebbia con brina"],
+  51: ["🌦️", "Pioviggine leggera"], 53: ["🌦️", "Pioviggine"], 55: ["🌦️", "Pioviggine intensa"],
+  61: ["🌧️", "Pioggia leggera"], 63: ["🌧️", "Pioggia"], 65: ["🌧️", "Pioggia forte"],
+  71: ["🌨️", "Neve leggera"], 73: ["🌨️", "Neve"], 75: ["❄️", "Neve forte"],
+  80: ["🌦️", "Rovesci"], 81: ["🌧️", "Rovesci forti"], 82: ["⛈️", "Rovesci violenti"],
+  95: ["⛈️", "Temporale"], 96: ["⛈️", "Temporale con grandine"], 99: ["⛈️", "Temporale forte"]
+};
+const info = c => CODICI[c] || ["🌡️", "Meteo"];
+const direzione = g => ["N","NE","E","SE","S","SO","O","NO"][Math.round(g / 45) % 8];
+const $ = id => document.getElementById(id);
+
+// Posizione salvata sul telefono (default: Milano)
+let luogo = { nome: "Milano", lat: 45.46, lon: 9.19 };
+try { const s = JSON.parse(localStorage.getItem("luogo")); if (s) luogo = s; } catch (e) {}
+
+function costruisciURL() {
+  return "https://api.open-meteo.com/v1/forecast"
+    + "?latitude=" + luogo.lat + "&longitude=" + luogo.lon
+    + "&current_weather=true"
+    + "&hourly=temperature_2m,weathercode"
+    + "&daily=weathercode,temperature_2m_max,temperature_2m_min"
+    + "&timezone=auto";
+}
+
+function mostra(dati, daCache) {
+  const c = dati.current_weather;
+  const [icona, testo] = info(c.weathercode);
+  $("citta").textContent = "📍 " + luogo.nome;
+  $("icona").textContent = icona;
+  $("temp").textContent = Math.round(c.temperature) + "°";
+  $("desc").textContent = testo;
+  $("vento").textContent = c.windspeed + " km/h";
+  $("dir").textContent = direzione(c.winddirection);
+  document.body.classList.toggle("notte", c.is_day === 0);
+  document.querySelector('meta[name="theme-color"]').content = c.is_day === 0 ? "#0f2027" : "#1e3c72";
+
+  // Prossime 8 ore
+  const h = dati.hourly;
+  let i0 = h.time.findIndex(t => t.startsWith(c.time.slice(0, 13)));
+  if (i0 < 0) i0 = 0;
+  let oreHtml = "";
+  for (let i = i0 + 1; i <= i0 + 8 && i < h.time.length; i++) {
+    oreHtml += `<div class="ora-box"><small>${h.time[i].slice(11, 16)}</small>
+      <div class="ic">${info(h.weathercode[i])[0]}</div><b>${Math.round(h.temperature_2m[i])}°</b></div>`;
+  }
+  $("ore").innerHTML = oreHtml;
+
+  // Prossimi 3 giorni
+  const g = dati.daily;
+  let gHtml = "";
+  for (let i = 1; i <= 3; i++) {
+    const nome = new Date(g.time[i]).toLocaleDateString("it-IT", { weekday: "short" });
+    gHtml += `<div class="giorno"><small>${nome}</small><div class="ic">${info(g.weathercode[i])[0]}</div>
+      <b>${Math.round(g.temperature_2m_max[i])}°</b> <small>${Math.round(g.temperature_2m_min[i])}°</small></div>`;
+  }
+  $("giorni").innerHTML = gHtml;
+
+  const quando = daCache ? "Dati salvati (sei offline)" : "Aggiornato alle " +
+    new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  $("ora").textContent = quando;
+  $("stato").textContent = daCache ? "⚠️ Nessuna connessione: mostro l'ultimo meteo salvato" : "";
+}
+
+async function carica() {
+  $("stato").textContent = "Aggiorno...";
+  try {
+    const r = await fetch(costruisciURL());          // 1. richiesta all'API
+    const dati = await r.json();                      // 2. risposta in JSON
+    try { localStorage.setItem("ultimiDati", JSON.stringify({ luogo, dati })); } catch (e) {}
+    mostra(dati, false);                              // 3. scrivo i dati nella pagina
+  } catch (e) {
+    try {
+      const salvato = JSON.parse(localStorage.getItem("ultimiDati"));
+      if (salvato) { luogo = salvato.luogo; mostra(salvato.dati, true); return; }
+    } catch (e2) {}
+    $("stato").textContent = "⚠️ Impossibile contattare l'API. Controlla internet.";
+    $("desc").textContent = "Errore";
+  }
+}
+
+function salvaLuogo(nuovo) {
+  luogo = nuovo;
+  try { localStorage.setItem("luogo", JSON.stringify(luogo)); } catch (e) {}
+  carica();
+}
+
+// GPS del telefono
+function usaGPS() {
+  if (!navigator.geolocation) { $("stato").textContent = "GPS non disponibile"; return; }
+  $("stato").textContent = "Cerco la tua posizione...";
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = +pos.coords.latitude.toFixed(3), lon = +pos.coords.longitude.toFixed(3);
+    let nome = "La tua posizione";
+    try {
+      const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=it`);
+      const d = await r.json();
+      nome = d.city || d.locality || nome;
+    } catch (e) {}
+    salvaLuogo({ nome, lat, lon });
+  }, () => { $("stato").textContent = "Permesso GPS negato"; }, { timeout: 10000 });
+}
+
+// Ricerca città (API di geocoding di Open-Meteo)
+async function cercaCitta() {
+  const q = $("cerca").value.trim();
+  if (q.length < 2) return;
+  try {
+    const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=5&language=it&name=" + encodeURIComponent(q));
+    const d = await r.json();
+    const box = $("sugg");
+    if (!d.results) { box.style.display = "block"; box.innerHTML = "<div>Nessun risultato</div>"; return; }
+    box.innerHTML = "";
+    d.results.forEach(c => {
+      const el = document.createElement("div");
+      el.textContent = c.name + (c.admin1 ? ", " + c.admin1 : "") + " (" + c.country_code + ")";
+      el.onclick = () => {
+        box.style.display = "none"; $("cerca").value = "";
+        salvaLuogo({ nome: c.name, lat: c.latitude, lon: c.longitude });
+      };
+      box.appendChild(el);
+    });
+    box.style.display = "block";
+  } catch (e) { $("stato").textContent = "Ricerca non riuscita (serve internet)"; }
+}
+$("cerca").addEventListener("keydown", e => { if (e.key === "Enter") cercaCitta(); });
+
+carica();
+
+// Registra il service worker: serve a Android per riconoscere la pagina come app installabile
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
