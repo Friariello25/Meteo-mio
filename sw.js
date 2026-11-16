@@ -1,6 +1,6 @@
 // Service worker: salva i file dell'app sul telefono così si apre anche senza internet
-const CACHE = "meteo-pwa-v5";
-const FILE = ["./meteo_pwa_mappa_corretta.html", "./manifest.json", "./icon-3d-192.png", "./icon-3d-512.png"];
+const CACHE = "meteo-pwa-v6";
+const FILE = ["./meteo_pwa_editoriale.html", "./manifest.json", "./icon-3d-192.png", "./icon-3d-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILE)));
