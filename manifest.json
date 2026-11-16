@@ -1,9 +1,9 @@
 {
   "name": "Meteo",
   "short_name": "Meteo",
-  "description": "Meteo con icone 3D, previsioni orarie, GPS e ricerca città",
-  "id": "./meteo_pwa_icone_nuove.html",
-  "start_url": "./meteo_pwa_icone_nuove.html",
+  "description": "Meteo con confronto tra fonti, radar della pioggia, GPS e ricerca città",
+  "id": "./meteo_pwa_mappa_corretta.html",
+  "start_url": "./meteo_pwa_mappa_corretta.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,7 +11,17 @@
   "theme_color": "#1e88e5",
   "lang": "it",
   "icons": [
-    { "src": "icon-3d-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-3d-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-3d-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-3d-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
